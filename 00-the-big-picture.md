@@ -24,7 +24,7 @@ The checkpoint contract lives in `libs/checkpoint/langgraph/checkpoint/base/__in
 
 Pregel treats each node like an actor that reads from channels and writes back to channels. The engine advances in supersteps, so every actor reads a stable snapshot, no actor sees writes from the same step, and the checkpoint boundary stays clean.
 
-The graph compiler does not keep a live drawing at runtime. It lowers state keys, edges, and `Send` fan out into channels and tasks, then the engine schedules only those tasks that the channels trigger. That is why the runtime talks about versions, writes, and tasks instead of an in memory graph object.
+The compiler lowers state keys, edges, and `Send` fan out into channels and tasks. The engine then schedules the resulting tasks by channel change, so runtime state lives in versions, writes, and checkpoints instead of in a live graph object.
 
 ```mermaid
 flowchart TB
@@ -70,7 +70,7 @@ That is why the checkpoint layer sits beneath the engine rather than beside it. 
 
 ## Supporting cast
 
-`sdk-py` and `sdk-js` act as clients for LangGraph Platform, `cli` automates that platform, `prebuilt` ships convenience building blocks, and `langgraphjs` mirrors the idea in JavaScript. None of those packages defines the Python execution engine in this repository; they sit around it.
+`sdk-py` and `sdk-js` act as clients for LangGraph Platform; `cli` automates that platform; `prebuilt` ships convenience building blocks; and `langgraphjs` mirrors the idea in JavaScript. None of those packages defines the Python execution engine in this repository.
 
 ## Honest limits, as of July 2026
 

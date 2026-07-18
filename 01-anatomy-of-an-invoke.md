@@ -20,13 +20,13 @@ When a `thread_id` exists, `SyncPregelLoop.__enter__` asks the checkpointer for 
 
 ## 3. Superstep loop
 
-The sync path in `main.py` drives the cycle as `while loop.tick(): runner.tick(...)`.
+The sync driver loop in `main.py` runs the cycle as `while loop.tick(): runner.tick(...)`.
 
 - **PLAN:** `loop.tick()` asks `prepare_next_tasks(...)` for the next runnable tasks. On a fresh thread, only the `START` triggered node qualifies at first; [/02-what-runs-next.md](/02-what-runs-next.md) explains the version math that opens later steps.
 
 - **EXECUTE:** `PregelRunner.tick(...)` runs one task or many, and it runs multiple tasks concurrently when the step contains more than one. Each node hands its return values through `ChannelWrite`, which converts them into `(channel, value)` tuples and sends them to `put_writes()`; with `sync` or `async` durability, the loop records those writes as pending writes before the next checkpoint. See [/05-why-checkpoints-look-like-that.md](/05-why-checkpoints-look-like-that.md) for the durability rationale.
 
-- **UPDATE:** `loop.after_tick()` calls `apply_writes(...)`, which groups writes by channel, calls each channel’s `update()` method, bumps channel versions, advances `versions_seen` for the nodes that ran, and checkpoints the step through `_put_checkpoint(...)`. [/03-your-state-compiles-to-channels.md](/03-your-state-compiles-to-channels.md) covers the reducer and channel semantics that make that update possible.
+- **UPDATE:** `loop.after_tick()` calls `apply_writes(...)`, which groups writes by channel, updates channels, bumps versions, advances `versions_seen` for the nodes that ran, and checkpoints the step through `_put_checkpoint(...)`. [/03-your-state-compiles-to-channels.md](/03-your-state-compiles-to-channels.md) covers the reducer and channel semantics that make that update possible.
 
 ```mermaid
 flowchart TD

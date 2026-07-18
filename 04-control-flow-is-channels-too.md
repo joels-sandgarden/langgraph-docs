@@ -53,13 +53,13 @@ A node that returns `Send(node, arg)` objects does not follow edges at all. `Bra
 
 That flow creates two task flavors. Subscription-driven pull tasks advance when trigger-channel writes make a node visible to the scheduler. Packet-driven push tasks advance when `prepare_next_tasks` drains queued `Send` packets from `TASKS`. The runtime keeps both forms under one scheduler because both forms reduce to channel activity.
 
-See the official [graph API](https://docs.langchain.com/oss/python/langgraph/graph-api) for edge and conditional-edge usage, and the official [use graph API guide](https://docs.langchain.com/oss/python/langgraph/use-graph-api) for the `Send` map-reduce recipe.
+See the official [graph API](https://docs.langchain.com/oss/python/langgraph/graph-api) for edge and conditional-edge usage, and the official [use-graph-api page](https://docs.langchain.com/oss/python/langgraph/use-graph-api) for the `Send` map-reduce recipe.
 
 ## `Command`
 
 `Command` lowers into the same channel machinery. `attach_node` turns `Command.update` into state writes, and `_control_branch` turns `goto` into channel writes that route to trigger channels or queued sends. `Command(graph=Command.PARENT)` does not stop inside the child graph; the compiled machinery raises `ParentCommand` so the parent graph handles the command at the boundary.
 
-For usage, see the official [graph API](https://docs.langchain.com/oss/python/langgraph/graph-api) for `Command` and the official [use subgraphs guide](https://docs.langchain.com/oss/python/langgraph/use-subgraphs) for cross-boundary behavior.
+For usage, see the official [graph API](https://docs.langchain.com/oss/python/langgraph/graph-api) for `Command` and the official [use-subgraphs page](https://docs.langchain.com/oss/python/langgraph/use-subgraphs) for cross-boundary behavior.
 
 ## Why this lowering matters
 

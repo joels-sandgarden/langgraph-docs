@@ -8,7 +8,7 @@ This page explains the checkpoint format's design choices without repeating the 
 
 A checkpoint stores the current channel values plus two version maps: `channel_versions` for channels and `versions_seen` for nodes. `Checkpoint` and `CheckpointMetadata` capture that saved state, while `prepare_next_tasks` and `should_interrupt` compare the maps to decide which nodes wake up next. The scheduler re-derives the execution frontier by pure comparison, so the state itself becomes the resume point and the engine does not carry a separate program counter.
 
-That matters because the runtime can restore in O(1) relative to the size of the recorded history. It does not need to replay every past write to rebuild state, and it does not need a separate log scan to recover the frontier. `channels_from_checkpoint`, `achannels_from_checkpoint`, and `copy_checkpoint` all rely on that direct snapshot model.
+That matters because the runtime can restore in O(1) relative to the size of the recorded history. It does not need to replay every past write to rebuild state, and it does not need a separate history scan to reconstruct the current values. `channels_from_checkpoint`, `achannels_from_checkpoint`, and `copy_checkpoint` all rely on that direct snapshot model.
 
 ## Why checkpoints land only at superstep boundaries
 
@@ -46,7 +46,7 @@ That choice matters because checkpoints need to move quickly between memory and 
 
 `BaseCheckpointSaver` defines the public contract, and `libs/checkpoint-conformance` turns that contract into an executable specification for third party savers. A saver that passes that suite matches the behavior LangGraph expects for checkpoints, writes, history, and copy operations.
 
-The first party savers include Postgres, SQLite, and `InMemorySaver`. `InMemorySaver` fits development and tests, not production. As of mid-2026, the beta `DeltaChannel` relaxes the rule that `channel_values` holds every channel's snapshot by reconstructing some channels from recorded writes; its format is explicitly unstable and this guide does not cover it.
+The first party savers include Postgres, SQLite, and `InMemorySaver`. `InMemorySaver` fits development and tests, not production. As of mid-2026, the beta `DeltaChannel` relaxes “channel_values holds every channel’s snapshot” by reconstructing some channels from recorded writes; its format is explicitly unstable and this guide does not cover it.
 
 ## Where to look in the code
 

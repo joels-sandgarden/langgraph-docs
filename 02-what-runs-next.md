@@ -6,15 +6,15 @@ The scheduler does not keep a runtime queue for this decision and it does not wa
 
 ## The checkpoint is the scheduler state
 
-The important move is to treat checkpoint data as the source of truth for scheduling. `channel_versions` records the current version for each channel, and `versions_seen` records the last version each node has already consumed. That pair is enough to decide whether a trigger channel has changed since the node last ran.
+These maps answer one question: did any watched channel move since the node last ran? `channel_versions` records the current version for each channel, and `versions_seen` records the last version each node has already consumed.
 
 `prepare_next_tasks` in `libs/langgraph/langgraph/pregel/_algo.py` builds the next task set, and `_triggers` performs the version comparison for each candidate node. `updated_channels` and `trigger_to_nodes` narrow the candidate set before that comparison runs, so the scheduler spends time on channels that changed instead of scanning the whole graph.
 
 ## Where the check happens
 
-The loop follows a simple sequence: run, consume, write, bump, compare again. A task runs in the current superstep, `apply_writes` records that its trigger channels now count as seen, `BaseChannel.consume()` lets a channel clear or compact anything it needs before the next pass, `BaseChannel.update()` applies the new writes, and `BaseChannel.finish()` closes out the frontier when nothing else remains to trigger.
+The loop follows a simple sequence: run, consume, write, bump, compare again. A task runs in the current superstep, `apply_writes` records that its trigger channels now count as seen, `BaseChannel.consume()` lets a channel clear or compact state, `BaseChannel.update()` applies the new writes, and `BaseChannel.finish()` closes out the frontier when nothing else remains to trigger.
 
-`apply_writes` in `libs/langgraph/langgraph/pregel/_algo.py` updates `versions_seen` first, then it advances `channel_versions` as channels consume reads and accept writes. `prepare_next_tasks` then reads the new checkpoint on the next superstep and asks the same question again: which trigger channels are available, and which ones now outrank the version each node already saw?
+`apply_writes` in `libs/langgraph/langgraph/pregel/_algo.py` updates `versions_seen` first, then it advances `channel_versions` as channels accept writes. `prepare_next_tasks` reads the saved checkpoint on the next superstep and asks the same version question again against the new frontier.
 
 ## Example: two nodes over three supersteps
 

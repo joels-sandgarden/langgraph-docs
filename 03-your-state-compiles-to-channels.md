@@ -2,7 +2,7 @@
 
 `StateGraph` does not keep state as a single mutable map. It lowers each schema key into a channel object with its own update rule, persistence shape, and trigger behavior. That bridge matters more than the surface syntax on the page, because the channel decides what happens when multiple nodes write, how values survive checkpoints, and when downstream nodes wake up.
 
-The useful mental model is simple: a node returns a batch of writes, the engine routes each write to the matching channel, and the channel decides how to absorb that batch. A plain key becomes `LastValue`, a reducer key becomes `BinaryOperatorAggregate`, and an explicit channel instance stays the channel that the graph uses. `ManagedValue` does not join persisted state at all; it comes from the runtime scratchpad, so the schema can name a runtime-supplied value without storing it in the checkpointed graph state.
+The useful mental model is operational: a node returns a batch of writes, the engine routes each write to a channel, and the channel decides how to absorb that batch. A plain key becomes `LastValue`, a reducer key becomes `BinaryOperatorAggregate`, and an explicit channel instance stays the channel that the graph uses. `ManagedValue` comes from the runtime scratchpad, so the schema can name a runtime-supplied value without storing it in checkpointed state.
 
 ```python
 class State(TypedDict):
@@ -41,7 +41,7 @@ Plain annotations use `LastValue` by default. It stores one value and rejects a 
 
 ### `DeltaChannel`
 
-As of mid 2026, `DeltaChannel` is beta, uses a batch-shaped reducer signature, and its on-disk format is not stable yet.
+As of mid 2026, `DeltaChannel` remains beta, uses a batch-shaped reducer signature, and its on-disk format is not stable yet.
 
 ## Channels and persistence
 
@@ -49,7 +49,7 @@ Each channel snapshots itself with `checkpoint()` and rebuilds itself with `from
 
 ## Channels and triggering
 
-Channel versions drive scheduling. When `apply_writes` updates a channel, it bumps that channel’s version, and version comparison wakes subscribed nodes. The same schema key therefore changes not only what value gets stored, but also when downstream nodes run, which is why reducer choice and channel choice shape runtime behavior rather than syntax alone. See `./02-what-runs-next.md` for the scheduling side of that mechanism.
+Channel versions drive scheduling. When `apply_writes` updates a channel, it bumps that channel’s version. Version comparison then wakes subscribed nodes, so channel choice changes run order as well as stored value. See `./02-what-runs-next.md` for the scheduling side of that mechanism.
 
 ## Decision table
 

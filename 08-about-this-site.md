@@ -6,7 +6,7 @@ This page frames the rest of the site. The pages below stay at the concept level
 
 That framing matters because the codebase does not divide cleanly along API names. A reader needs one model that explains how state schemas, graph topology, compiled artifacts, checkpoint records, and execution state interact. This guide keeps those pieces in view together so the rest of the pages can stay focused on one idea at a time.
 
-This guide keeps those pieces together because state schemas, graph topology, compiled artifacts, checkpoint records, and execution state all shape one another. A graph definition changes the compiled artifact, and the compiled artifact changes how checkpoints and execution state evolve. Splitting those topics hides the contract that the runtime actually maintains and makes the rest of the map harder to read.
+This guide keeps those pieces together because state schemas, graph topology, compiled artifacts, checkpoint records, and execution state all shape one another. A graph definition changes the compiled artifact, and that artifact in turn changes how checkpoints and execution state evolve. Splitting those topics hides the contract that the runtime maintains and makes the rest of the map harder to read.
 
 ## Contents
 

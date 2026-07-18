@@ -22,7 +22,7 @@ When a `thread_id` exists, `SyncPregelLoop.__enter__` asks the checkpointer for 
 
 - **PLAN:** `loop.tick()` asks `prepare_next_tasks(...)` for the next runnable tasks. On a fresh thread, only the `START` triggered node qualifies at first; [/02-what-runs-next.md](/02-what-runs-next.md) explains the version math that opens later steps.
 
-- **EXECUTE:** `PregelRunner.tick(...)` runs one task or many, and it runs multiple tasks concurrently when the step contains more than one. Each node hands its return values through `ChannelWrite`, which converts them into `(channel, value)` tuples and sends them to `put_writes()`; with `sync` or `async` durability, the loop records those writes as pending writes right away so the next checkpoint can pick them up. See [/05-why-checkpoints-look-like-that.md](/05-why-checkpoints-look-like-that.md) for the durability rationale.
+- **EXECUTE:** `PregelRunner.tick(...)` runs one task or many, and it runs multiple tasks concurrently when the step contains more than one. Each node hands its return values through `ChannelWrite`, which converts them into `(channel, value)` tuples and sends them to `put_writes()`; with `sync` or `async` durability, the loop records those writes as pending writes before the next checkpoint. See [/05-why-checkpoints-look-like-that.md](/05-why-checkpoints-look-like-that.md) for the durability rationale.
 
 - **UPDATE:** `apply_writes(...)` groups writes by channel, calls each channel’s `update()` method, bumps channel versions, and advances `versions_seen` for the nodes that ran. After that, `_put_checkpoint(...)` saves the new checkpoint and increments the step counter; [/03-your-state-compiles-to-channels.md](/03-your-state-compiles-to-channels.md) covers the reducer and channel semantics that make that update possible.
 
@@ -38,11 +38,11 @@ flowchart TD
   Plan -->|limit| Limit[Step budget exhausted]
 ```
 
-This loop follows a strict BSP boundary. During one step, every channel stays immutable, current writes stay invisible, and parallel tasks read the same snapshot. When two tasks try to update the same state in a way the reducer cannot combine, the engine surfaces the symptom described in [/errors/INVALID_CONCURRENT_GRAPH_UPDATE](/errors/INVALID_CONCURRENT_GRAPH_UPDATE).
+This loop follows a strict BSP boundary: current writes stay invisible, channels stay immutable within the step, and parallel tasks read the same snapshot. When two tasks try to update the same state in a way the reducer cannot combine, the engine surfaces the symptom described in [/errors/INVALID_CONCURRENT_GRAPH_UPDATE](/errors/INVALID_CONCURRENT_GRAPH_UPDATE).
 
 ## 4. Termination
 
-The loop stops when `prepare_next_tasks(...)` finds no runnable tasks. It also stops when the step budget runs out; `SyncPregelLoop.tick()` then marks the run with `GraphRecursionError` and the `GRAPH_RECURSION_LIMIT` error code.
+The loop stops when `prepare_next_tasks(...)` finds no runnable tasks or when the step budget runs out. In the latter case, `SyncPregelLoop.tick()` raises `GraphRecursionError` with the `GRAPH_RECURSION_LIMIT` error code.
 
 An interrupt also ends the loop, but the exit path still commits the checkpoint before `__interrupt__` reaches the caller. That keeps the saved state aligned with the interrupt boundary instead of leaving the run half advanced.
 

@@ -1,8 +1,8 @@
 # Control Flow Is Channels Too
 
-The companion page [03-your-state-compiles-to-channels](./03-your-state-compiles-to-channels.md) covers state lowering. This page covers the other half of `compile()`: how graph topology becomes runtime channels, subscriptions, and write instructions. At build time, edges and branches describe reachability; at runtime, the engine sees only channels, `PregelNode` objects subscribed to those channels, and writers that emit the next updates.
+The companion page [03-your-state-compiles-to-channels](./03-your-state-compiles-to-channels.md) covers state lowering. This page covers the other half of `compile()`: how graph topology becomes runtime channels, subscriptions, and write instructions. The builder graph describes reachability through edges and branches; the runtime sees only channels, `PregelNode` objects subscribed to those channels, and writers that emit the next updates.
 
-The key idea is simple: control flow becomes data flow. A builder edge such as `A -> B` does not survive as a standalone scheduling rule. `compile()` turns it into a write to B's trigger channel, so the next planning pass decides whether B runs from channel activity rather than from a remembered edge list.
+Control flow becomes data flow. A builder edge such as `A -> B` does not survive as a standalone scheduling rule. `compile()` turns it into a write to B's trigger channel, so the next planning pass decides whether B runs from channel activity rather than from a remembered edge list.
 
 ## Runtime model
 
@@ -63,7 +63,7 @@ For usage, see the official [types reference](https://docs.langchain.com/oss/pyt
 
 ## Why this lowering matters
 
-Lowering graph topology into channels gives the engine one scheduling rule that covers static edges, join barriers, conditional routes, and dynamic fan-out. `prepare_next_tasks` can compare versions, decide which subscriptions changed, and schedule the right pull tasks and push tasks without special cases for each control-flow construct. Checkpoints can then preserve in-flight control flow, so a half-full barrier or a queued `Send` packet survives a crash and resumes in the same place on the next run. See [05-why-checkpoints-look-like-that](./05-why-checkpoints-look-like-that.md).
+This lowering gives `prepare_next_tasks` one version comparison rule that covers static edges, join barriers, conditional routes, and dynamic fan-out without special cases for each control-flow construct. Checkpoints can then preserve in-flight control flow, so a half-full barrier or a queued `Send` packet survives a crash and resumes in the same place on the next run. See [05-why-checkpoints-look-like-that](./05-why-checkpoints-look-like-that.md).
 
 ## Where to look in the code
 

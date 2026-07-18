@@ -29,10 +29,11 @@ flowchart LR
     BA --> CT["C trig"]
     BT --> NB["B: PregelNode"]
     CT --> NC["C: PregelNode"]
-    NB --> JV["join A+B"]
+    NB --> JV["join:A+B+C:D"]
     NC --> JV
     JV --> DT["D trig"]
-    TASKS["TASKS"] --> PT["push task"]
+    TASKS["TASKS"] --> PN["prepare_next_tasks"]
+    PN --> PT["push task"]
   end
 ```
 

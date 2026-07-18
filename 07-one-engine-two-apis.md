@@ -28,7 +28,7 @@ Because `@entrypoint` builds one node, the checkpoint boundary falls around that
 
 ## Choosing between the APIs
 
-Choose between the APIs for ergonomics and observability, not capability. `StateGraph` exposes explicit topology, node by node visibility, and easy interrupt placement. `@entrypoint` and `@task` keep the control flow in plain Python while still giving task level parallelism. Both paths reach the identical Pregel engine, so the difference lies in how much structure the code shows, not in what the runtime can do. For a usage level comparison, see the official [Choosing APIs](https://docs.langchain.com/oss/python/langgraph/choosing-apis) page.
+Choose between the APIs for ergonomics and observability, not capability. `StateGraph` exposes explicit topology, per node visibility, and easy interrupt placement. `@entrypoint` and `@task` keep the control flow in plain Python while still giving task level parallelism. Both paths reach the identical Pregel engine, so the difference lies in how much structure the code shows, not in what the runtime can do. For a usage level comparison, see the official [Choosing APIs](https://docs.langchain.com/oss/python/langgraph/choosing-apis) page.
 
 ## Where to look in the code
 

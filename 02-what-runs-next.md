@@ -1,6 +1,6 @@
 # What Runs Next
 
-This page explains how LangGraph decides which node runs in the next superstep. The [Pregel](https://docs.langchain.com/oss/python/langgraph/pregel) and [checkpointers](https://docs.langchain.com/oss/python/langgraph/checkpointers) pages cover the surrounding execution model and checkpoint storage; this page covers the bookkeeping that turns stored state into the next frontier of work. See [01-anatomy-of-an-invoke.md](./01-anatomy-of-an-invoke.md), [03-your-state-compiles-to-channels.md](./03-your-state-compiles-to-channels.md), and [04-control-flow-is-channels-too.md](./04-control-flow-is-channels-too.md) for the adjacent pieces that feed this decision.
+This page explains how LangGraph decides which node runs in the next superstep. The [Pregel](https://docs.langchain.com/oss/python/langgraph/pregel) and [checkpointers](https://docs.langchain.com/oss/python/langgraph/checkpointers) pages cover the scheduler model and checkpoint storage around that decision; this page covers the bookkeeping that turns stored state into the next frontier of work. See [01-anatomy-of-an-invoke.md](./01-anatomy-of-an-invoke.md), [03-your-state-compiles-to-channels.md](./03-your-state-compiles-to-channels.md), and [04-control-flow-is-channels-too.md](./04-control-flow-is-channels-too.md) for the adjacent pieces that feed this decision.
 
 The scheduler does not keep a runtime queue for this decision and it does not walk edges from a live graph to discover work. It reads two persisted maps in the checkpoint, `channel_versions[channel_name]` and `versions_seen[node_name][channel_name]`, and it treats a node as due when one of its trigger channels is available and the current channel version is newer than the version recorded for that channel in that node’s `versions_seen` entry.
 
@@ -8,7 +8,7 @@ The scheduler does not keep a runtime queue for this decision and it does not wa
 
 These maps answer one question: did any watched channel move since the node last ran? `channel_versions` records the current version for each channel, and `versions_seen` records the last version each node has already consumed.
 
-`prepare_next_tasks` in `libs/langgraph/langgraph/pregel/_algo.py` builds the next task set, and `_triggers` performs the version comparison for each candidate node. `apply_writes` returns the updated channel set, and `prepare_next_tasks` uses that set with `trigger_to_nodes` before the comparison runs.
+`prepare_next_tasks` in `libs/langgraph/langgraph/pregel/_algo.py` builds the next task set, and `_triggers` performs the version comparison for each candidate node. `apply_writes` returns the updated channel set, and `prepare_next_tasks` uses that set with `trigger_to_nodes` before comparison starts.
 
 ## Where the check happens
 
@@ -40,7 +40,7 @@ The other stop condition is quiescence. When the frontier goes empty, `prepare_n
 
 ## Version flow
 
-The same two maps drive every pass through the loop: planning compares them, execution produces writes, and `apply_writes` moves both maps forward for the next comparison. See [05-why-checkpoints-look-like-that.md](./05-why-checkpoints-look-like-that.md) and [06-replay-resume-and-idempotency.md](./06-replay-resume-and-idempotency.md) for the checkpoint shape and replay contract that make this work.
+The same two maps drive every pass through the loop: planning compares them, execution produces writes, and `apply_writes` moves both maps forward for the next comparison. See [05-why-checkpoints-look-like-that.md](./05-why-checkpoints-look-like-that.md) and [06-replay-resume-and-idempotency.md](./06-replay-resume-and-idempotency.md) for the checkpoint shape and replay contract behind that flow.
 
 ```mermaid
 flowchart LR

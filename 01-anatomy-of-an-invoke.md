@@ -2,7 +2,7 @@
 
 This page traces one synchronous `graph.invoke(input, config)` call through the engine that powers a compiled LangGraph graph with a `thread_id`. It shows how one request becomes a superstep loop: load checkpoint state, plan runnable tasks, execute them, apply writes, and stop with a stable result.
 
-The official LangGraph [`pregel`](https://docs.langchain.com/oss/python/langgraph/pregel), [`graph-api`](https://docs.langchain.com/oss/python/langgraph/graph-api), and [`checkpointers`](https://docs.langchain.com/oss/python/langgraph/checkpointers) pages already cover the abstract runtime model, state and channel semantics, and checkpoint design; this page adds the code-level trace those pages omit. It sits beside the broader map in [/00-the-big-picture.md](/00-the-big-picture.md) and the API split in [/07-one-engine-two-apis.md](/07-one-engine-two-apis.md).
+The official LangGraph [`pregel`](https://docs.langchain.com/oss/python/langgraph/pregel), [`graph-api`](https://docs.langchain.com/oss/python/langgraph/graph-api), and [`checkpointers`](https://docs.langchain.com/oss/python/langgraph/checkpointers) pages already cover the abstract runtime model, state and channel semantics, and checkpoint design. This page adds the code-level trace those pages omit. It sits beside the broader map in [/00-the-big-picture.md](/00-the-big-picture.md) and the API split in [/07-one-engine-two-apis.md](/07-one-engine-two-apis.md).
 
 ## 1. Entry
 

@@ -34,7 +34,7 @@ That contract pushes idempotency to the edge of the system. External writes need
 
 ## 5. Functional API version.
 
-The Functional API uses the same durable execution machinery, but it shifts the replay boundary down to tasks. For the engine lowering story, see [one engine, two APIs](./07-one-engine-two-apis.md). In `langgraph/func/__init__.py`, `@task` wraps work as `_TaskFunction`, and completed task results persist in the checkpointer so replay can return the recorded result instead of recomputing that task. The runner restores those task writes through the same commit path that Graph API nodes use, so the mechanism stays shared even when the programming model changes.
+The Functional API uses the same durable execution machinery, but it shifts the replay boundary down to tasks. For the lowering story, see [one engine, two APIs](./07-one-engine-two-apis.md). In `langgraph/func/__init__.py`, `@task` wraps work as `_TaskFunction`, and completed task results persist in the checkpointer so replay can return the recorded result instead of recomputing that task. The runner restores those task writes through the same commit path that Graph API nodes use, so the mechanism stays shared even when the programming model changes.
 
 The entrypoint body still re-executes from the top on replay. That means orchestration code runs again, but finished tasks behave like memoized steps because the runner restores their saved values before it schedules fresh work. `entrypoint.final` only separates the returned value from the saved value; it does not change the replay model. It gives the Functional API a clean split between the value returned now and the value stored for the next invocation.
 
@@ -52,5 +52,5 @@ For usage details, the official [fault tolerance](https://docs.langchain.com/oss
 - `libs/langgraph/langgraph/pregel/_loop.py`: checkpoint restore, pending writes, durability handling, and `_suppress_interrupt`.
 - `libs/langgraph/langgraph/pregel/_algo.py`: `apply_writes`, `prepare_next_tasks`, and `should_interrupt`.
 - `libs/langgraph/langgraph/pregel/_checkpoint.py`: `create_checkpoint`, `channels_from_checkpoint`, `achannels_from_checkpoint`, `_needs_replay`, and `exit_delta_task_id`.
-- `libs/langgraph/langgraph/pregel/_retry.py` and `libs/langgraph/langgraph/pregel/_runner.py`: retry loops, task commit, and interrupt or error write handling, plus the related interrupt, replay, fork, and retry tests in `libs/langgraph/tests/test_interruption.py`, `libs/langgraph/tests/test_time_travel.py`, and `libs/langgraph/tests/test_retry.py`.
+- `libs/langgraph/langgraph/pregel/_retry.py` and `libs/langgraph/langgraph/pregel/_runner.py`: retry loops, task commit, and interrupt or error write handling, and the related tests in `libs/langgraph/tests/test_interruption.py`, `libs/langgraph/tests/test_time_travel.py`, and `libs/langgraph/tests/test_retry.py`.
 - `libs/langgraph/langgraph/_internal/_replay.py` and `libs/langgraph/langgraph/func/__init__.py`: `ReplayState`, `_TaskFunction`, `task`, `entrypoint`, and `entrypoint.final`.

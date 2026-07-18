@@ -2,7 +2,7 @@
 
 This page traces one synchronous `graph.invoke(input, config)` call through the engine that powers a compiled LangGraph graph with a `thread_id`. It shows how one request becomes a superstep loop: load checkpoint state, plan runnable tasks, execute them, apply writes, and stop with a stable result.
 
-The official LangGraph docs at [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/) cover the public model. This page adds the connective path between those concepts and the Python engine, and it sits beside the broader map in [/00-the-big-picture.md](/00-the-big-picture.md) and the API split in [/07-one-engine-two-apis.md](/07-one-engine-two-apis.md).
+The official LangGraph [`pregel`](https://docs.langchain.com/oss/python/langgraph/pregel), [`graph-api`](https://docs.langchain.com/oss/python/langgraph/graph-api), and [`checkpointers`](https://docs.langchain.com/oss/python/langgraph/checkpointers) pages already cover the abstract runtime model, state and channel semantics, and checkpoint design; this page adds the code-level trace those pages omit. It sits beside the broader map in [/00-the-big-picture.md](/00-the-big-picture.md) and the API split in [/07-one-engine-two-apis.md](/07-one-engine-two-apis.md).
 
 ## 1. Entry
 
@@ -38,11 +38,11 @@ flowchart TD
   Plan -->|limit| Limit[Step budget exhausted]
 ```
 
-This loop follows a strict BSP boundary: current writes stay invisible, channels stay immutable within the step, and parallel tasks read the same snapshot. When two tasks try to update the same state in a way the reducer cannot combine, the engine surfaces the symptom described in [/errors/INVALID_CONCURRENT_GRAPH_UPDATE](/errors/INVALID_CONCURRENT_GRAPH_UPDATE).
+This loop follows a strict BSP boundary: current writes stay invisible, channels stay immutable within the step, and parallel tasks read the same snapshot. When two tasks try to update the same state in a way the reducer cannot combine, the engine surfaces the symptom described in [INVALID_CONCURRENT_GRAPH_UPDATE](https://docs.langchain.com/oss/python/langgraph/errors/INVALID_CONCURRENT_GRAPH_UPDATE).
 
 ## 4. Termination
 
-The loop stops when `prepare_next_tasks(...)` finds no runnable tasks or when the step budget runs out. In the latter case, `SyncPregelLoop.tick()` raises `GraphRecursionError` with the `GRAPH_RECURSION_LIMIT` error code.
+The loop stops when `prepare_next_tasks(...)` finds no runnable tasks or when the step budget runs out. In the latter case, `SyncPregelLoop.tick()` raises `GraphRecursionError` with the [`GRAPH_RECURSION_LIMIT`](https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT) error code.
 
 An interrupt also ends the loop, but the exit path still commits the checkpoint before `__interrupt__` reaches the caller. That keeps the saved state aligned with the interrupt boundary instead of leaving the run half advanced.
 

@@ -9,7 +9,7 @@ class State(TypedDict):
     messages: Annotated[list, add_messages]
 ```
 
-That line compiles the `messages` key to `BinaryOperatorAggregate`. `add_messages` is an ordinary two-argument reducer in `libs/langgraph/langgraph/graph/message.py`. The runtime then works against the channel object, not against the annotation text.
+That line compiles the `messages` key to `BinaryOperatorAggregate`. `add_messages` is an ordinary two-argument reducer in `libs/langgraph/langgraph/graph/message.py`.
 
 ## How compilation resolves a field
 

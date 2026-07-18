@@ -22,7 +22,7 @@ The checkpoint contract lives in `libs/checkpoint/langgraph/checkpoint/base/__in
 
 ## The runtime model
 
-Pregel treats each node like an actor that reads from channels and writes back to channels. See [Anatomy of an invoke](/01-anatomy-of-an-invoke.md) and [What runs next](/02-what-runs-next.md) for the call trace and scheduling math, and use the official [Pregel docs](https://docs.langchain.com/oss/python/langgraph/pregel) for the user model that sits below this map. The engine advances in supersteps, so every actor reads a stable snapshot, no actor sees writes from the same step, and the checkpoint boundary stays clean.
+Pregel treats each node like an actor that reads from channels and writes back to channels. See [Anatomy of an invoke](/01-anatomy-of-an-invoke.md) and [What runs next](/02-what-runs-next.md) for the call trace and scheduling math. The official [Pregel docs](https://docs.langchain.com/oss/python/langgraph/pregel) cover the execution model that this hub only sketches. The engine advances in supersteps, so every actor reads a stable snapshot, no actor sees writes from the same step, and the checkpoint boundary stays clean.
 
 The compiler lowers state keys, edges, and `Send` fan out into channels and tasks. The engine then schedules the resulting tasks by channel change, so runtime state lives in versions, writes, and checkpoints instead of in a live graph object.
 

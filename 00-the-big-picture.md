@@ -1,6 +1,6 @@
 # The big picture
 
-LangGraph runs durable, stateful agent and workflow executions. Most readers meet it through `StateGraph` in `libs/langgraph/langgraph/graph/state.py`, call `compile()`, and then invoke the compiled graph with a `thread_id` so the run can resume later. The official [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/) cover the user facing model in more detail; this page maps the Python monorepo and shows how the pieces fit together.
+LangGraph runs durable, stateful agent and workflow executions. Most readers meet it through `StateGraph` in `libs/langgraph/langgraph/graph/state.py`, call `compile()`, and then invoke the compiled graph with a `thread_id` so the run can resume later. The official [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/) cover the user facing model in more detail; this page maps the Python monorepo and shows how the pieces fit together. For the path from invoke to execution, see [Anatomy of an invoke](/01-anatomy-of-an-invoke.md) and [What runs next](/02-what-runs-next.md).
 
 ## The three layer model
 
@@ -22,7 +22,7 @@ The checkpoint contract lives in `libs/checkpoint/langgraph/checkpoint/base/__in
 
 ## The runtime model
 
-Pregel treats each node like an actor that reads from channels and writes back to channels. The engine advances in supersteps, so every actor reads a stable snapshot, no actor sees writes from the same step, and the checkpoint boundary stays clean.
+Pregel treats each node like an actor that reads from channels and writes back to channels. See [Anatomy of an invoke](/01-anatomy-of-an-invoke.md) and [What runs next](/02-what-runs-next.md) for the call trace and scheduling math, and use the official [Pregel docs](https://docs.langchain.com/oss/python/langgraph/pregel) for the user model that sits below this map. The engine advances in supersteps, so every actor reads a stable snapshot, no actor sees writes from the same step, and the checkpoint boundary stays clean.
 
 The compiler lowers state keys, edges, and `Send` fan out into channels and tasks. The engine then schedules the resulting tasks by channel change, so runtime state lives in versions, writes, and checkpoints instead of in a live graph object.
 
@@ -54,23 +54,23 @@ flowchart TB
 
 ## How state becomes tasks
 
-`StateGraph` compiles state keys into channels, edges into triggers, and `Send` fan out into tasks. `libs/langgraph/langgraph/channels/__init__.py` exposes the channel family that the compiler and runtime share. `libs/langgraph/langgraph/pregel/_algo.py` shows the important detail: the compiler and engine care about which channels changed and which nodes saw those changes, not about the shape of the drawn graph.
+`StateGraph` compiles state keys into channels, edges into triggers, and `Send` fan out into tasks. For the channel model and the branch logic, see [Your state compiles to channels](/03-your-state-compiles-to-channels.md) and [Control flow is channels too](/04-control-flow-is-channels-too.md), along with the official [Graph API docs](https://docs.langchain.com/oss/python/langgraph/graph-api) for reducer semantics. `libs/langgraph/langgraph/channels/__init__.py` exposes the channel family that the compiler and runtime share. `libs/langgraph/langgraph/pregel/_algo.py` shows the important detail: the compiler and engine care about which channels changed and which nodes saw those changes, not about the shape of the drawn graph.
 
 Conditional routing follows the same rule. `libs/langgraph/langgraph/graph/_branch.py` translates branch decisions into writes that feed the next step, so control flow stays inside the same channel and task model.
 
 ## Persistence is one mechanism for many behaviors
 
-The same checkpoint mechanism powers pause and resume, human review, time travel, and crash recovery. A `thread_id` gives the saver a stable key for the conversation or run, and each checkpoint records the state at one boundary in the superstep timeline. Resuming picks up from the latest checkpoint, time travel forks from an earlier checkpoint, and recovery replays the same writes because the saver stores both checkpoint state and pending writes.
+The same checkpoint mechanism powers pause and resume, human review, time travel, and crash recovery. For the checkpoint format and replay contract, see [Why checkpoints look like that](/05-why-checkpoints-look-like-that.md) and [Replay, resume, and idempotency](/06-replay-resume-and-idempotency.md), plus the official [Persistence docs](https://docs.langchain.com/oss/python/langgraph/persistence) and [Checkpointers docs](https://docs.langchain.com/oss/python/langgraph/checkpointers). A `thread_id` gives the saver a stable key for the conversation or run, and each checkpoint records the state at one boundary in the superstep timeline. Resuming picks up from the latest checkpoint, time travel forks from an earlier checkpoint, and recovery replays the same writes because the saver stores both checkpoint state and pending writes.
 
 That is why the checkpoint layer sits beneath the engine rather than beside it. The runtime needs one durable contract for every path that crosses a boundary, whether the boundary comes from a normal step, an interrupt, or a restart after failure.
 
 ## The functional API
 
-`@entrypoint` and `@task` in `libs/langgraph/langgraph/func/__init__.py` use the same runtime without a drawn graph. The functional API still compiles into Pregel, still uses channels and checkpoints, and still honors the same durability model. It simply exposes the engine through function shaped entry points instead of a state graph builder.
+`@entrypoint` and `@task` in `libs/langgraph/langgraph/func/__init__.py` use the same runtime without a drawn graph. For the split between graph-shaped and function-shaped entry points, see [One engine, two APIs](/07-one-engine-two-apis.md) and the official [Functional API docs](https://docs.langchain.com/oss/python/langgraph/functional-api). The functional API still compiles into Pregel, still uses channels and checkpoints, and still honors the same durability model. It simply exposes the engine through function-shaped entry points instead of a state graph builder.
 
 ## Supporting cast
 
-`sdk-py` and `sdk-js` act as clients for LangGraph Platform; `cli` automates that platform; `prebuilt` ships convenience building blocks; and `langgraphjs` mirrors the idea in JavaScript. None of those packages defines the Python execution engine in this repository.
+`sdk-py` and `sdk-js` act as clients for LangGraph Platform; `cli` automates that platform; `prebuilt` ships convenience building blocks; and `langgraphjs` mirrors the idea in JavaScript. None of those packages defines the Python execution engine in this repository. For the guide map and reading order, see [About this site](/08-about-this-site.md).
 
 ## Honest limits, as of July 2026
 

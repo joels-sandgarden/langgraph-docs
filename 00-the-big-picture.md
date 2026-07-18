@@ -1,6 +1,6 @@
 # The big picture
 
-LangGraph runs durable, stateful agent and workflow executions. Most readers meet it through `StateGraph` in `libs/langgraph/langgraph/graph/state.py`, call `compile()`, and then invoke the compiled graph with a `thread_id` so the run can resume later. The official [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/) cover the user facing model in more detail; this page maps the Python monorepo and shows how the pieces connect.
+LangGraph runs durable, stateful agent and workflow executions. Most readers meet it through `StateGraph` in `libs/langgraph/langgraph/graph/state.py`, call `compile()`, and then invoke the compiled graph with a `thread_id` so the run can resume later. The official [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/) cover the user facing model in more detail; this page maps the Python monorepo and shows how the pieces fit together.
 
 ## The three layer model
 
@@ -70,7 +70,7 @@ That is why the checkpoint layer sits beneath the engine rather than beside it. 
 
 ## Supporting cast
 
-`sdk-py` and `sdk-js` talk to LangGraph Platform, `cli` automates that platform, `prebuilt` ships convenience building blocks, and `langgraphjs` mirrors the idea in JavaScript. None of those packages defines the Python execution engine in this repository; they sit around it.
+`sdk-py` and `sdk-js` act as clients for LangGraph Platform, `cli` automates that platform, `prebuilt` ships convenience building blocks, and `langgraphjs` mirrors the idea in JavaScript. None of those packages defines the Python execution engine in this repository; they sit around it.
 
 ## Honest limits, as of July 2026
 

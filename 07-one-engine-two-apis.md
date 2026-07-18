@@ -20,7 +20,7 @@ The task layer adds a second kind of scheduled work. The `task()` decorator retu
 
 ## Persistence and replay
 
-Because `@entrypoint` builds one node, the checkpoint boundary falls around that node rather than around each line of the function body. The engine persists task writes, then rebuilds task state from those writes on replay. On resume, the entrypoint body runs again from the top, but tasks that already finished return their recorded results from the checkpoint instead of recomputing. The same replay and idempotency contract that graph nodes follow applies here too: the loop may replay a superstep, and the code inside the entrypoint must tolerate that. The checkpoint and version bookkeeping in `langgraph/pregel/_loop.py` makes that possible, because the loop reuses the saved writes, updates `channel_versions`, and carries forward `versions_seen` before it continues. See [Replay, resume, and idempotency](/06-replay-resume-and-idempotency.md).
+Because `@entrypoint` builds one node, the checkpoint boundary falls around that node rather than around each line of the function body. The engine persists task writes, then restores them on replay. On resume, the entrypoint body starts again from the top, but completed tasks return their recorded results from the checkpoint instead of recomputing. That preserves the same replay and idempotency contract that graph nodes follow: the loop may repeat a superstep, and the code inside the entrypoint must tolerate that. The checkpoint and version bookkeeping in `langgraph/pregel/_loop.py` makes that possible, because the loop reuses the saved writes, updates `channel_versions`, and carries forward `versions_seen` before it continues. See [Replay, resume, and idempotency](/06-replay-resume-and-idempotency.md).
 
 ## `PREVIOUS` and `entrypoint.final`
 
@@ -28,7 +28,7 @@ Because `@entrypoint` builds one node, the checkpoint boundary falls around that
 
 ## Choosing between the APIs
 
-Choose between the APIs for ergonomics and observability, not capability. `StateGraph` exposes explicit topology, per node visibility, and easy interrupt placement. `@entrypoint` and `@task` keep the control flow in plain Python while still giving task level parallelism. Both paths reach the identical Pregel engine, so the difference lies in how much structure the code shows, not in what the runtime can do. For a usage level comparison, see the official [Choosing APIs](https://docs.langchain.com/oss/python/langgraph/choosing-apis) page.
+Choose between the APIs for ergonomics and observability, not capability. `StateGraph` exposes explicit topology, node by node visibility, and easy interrupt placement. `@entrypoint` and `@task` keep the control flow in plain Python while still giving task level parallelism. Both paths reach the identical Pregel engine, so the difference lies in how much structure the code shows, not in what the runtime can do. For a usage level comparison, see the official [Choosing APIs](https://docs.langchain.com/oss/python/langgraph/choosing-apis) page.
 
 ## Where to look in the code
 

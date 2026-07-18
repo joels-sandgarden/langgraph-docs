@@ -8,7 +8,7 @@ Engineers adopting, embedding, extending, or debugging LangGraph need one mental
 
 The official LangGraph docs cover usage, tutorials, and reference material. This site owns the connective internals layer they do not spell out: how those pieces work together across the runtime.
 
-The guide reads as a sequence from the big picture through invoke flow, scheduling, state compilation, topology, checkpoints, and replay, so each sibling page covers one runtime layer and points to the next one.
+The guide runs from the big picture through invoke flow, scheduling, state compilation, topology, checkpoints, and replay, so each sibling page handles one runtime layer and hands off to the next.
 
 ## Contents
 

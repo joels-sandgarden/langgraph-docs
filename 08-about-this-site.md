@@ -6,7 +6,7 @@ This page frames the rest of the site. The pages below stay at the concept level
 
 Engineers adopting, embedding, extending, or debugging LangGraph need one mental model for state schemas, graph topology, compiled artifacts, checkpoint records, and execution state.
 
-The official LangGraph docs cover usage, tutorials, and reference material. This site covers the connective layer they do not spell out: how those pieces work together across the runtime.
+The official LangGraph docs cover usage, tutorials, and reference material. This site owns the connective internals layer they do not spell out: how those pieces work together across the runtime.
 
 ## Contents
 

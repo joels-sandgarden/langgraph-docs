@@ -10,13 +10,13 @@ In `langgraph/graph/state.py`, `StateGraph.compile()` builds a `CompiledStateGra
 
 `entrypoint.__call__` builds a graph with one `PregelNode`: the decorated function. It triggers that node from `START`, and it gives the node two writers. One writer sends the function return value to `END`; the other saves the carried forward value into `PREVIOUS`. The channel set contains only `START`, `END`, and `PREVIOUS`, with `START` as `EphemeralValue` and the other two as `LastValue`. That makes the functional workflow a one node graph.
 
-The same loop still performs plan, execute, and update, and it still persists checkpoints and advances versions. That is the same machinery the [Anatomy of an invoke](/01-anatomy-of-an-invoke.md) page describes: writes land in channels, channel versions advance, `versions_seen` records what each node consumed, and the checkpointer stores the result for the next run.
+The same loop still performs plan, execute, and update, and it still persists checkpoints and advances versions. That is the same machinery the [Anatomy of an invoke](./01-anatomy-of-an-invoke.md) page describes: writes land in channels, channel versions advance, `versions_seen` records what each node consumed, and the checkpointer stores the result for the next run.
 
 ## What `@task` adds
 
 The task layer adds a second kind of scheduled work. The `task()` decorator returns `_TaskFunction`, and `_TaskFunction.__call__` returns a `SyncAsyncFuture` through `_call_with_options`. The decorated callable does not run in a separate worker pool just because it sits under the Functional API.
 
-`get_runnable_for_task()` in `langgraph/pregel/_call.py` wraps the task in a `RunnableSeq` that ends with `ChannelWrite([ChannelWriteEntry(RETURN)])`, so the runner records the task result as a normal write. `prepare_push_task_functional()` in `langgraph/pregel/_algo.py` turns each task call into a dynamic `PUSH` task with its own scratchpad, runtime, and checkpoint namespace. That matches the same machinery that `Send` packets use, so a task call inside an entrypoint behaves like a dynamic task created in the current superstep: the call returns a future, the Pregel runner schedules the work, and sibling tasks can run in parallel. See [Control flow is channels too](/04-control-flow-is-channels-too.md).
+`get_runnable_for_task()` in `langgraph/pregel/_call.py` wraps the task in a `RunnableSeq` that ends with `ChannelWrite([ChannelWriteEntry(RETURN)])`, so the runner records the task result as a normal write. `prepare_push_task_functional()` in `langgraph/pregel/_algo.py` turns each task call into a dynamic `PUSH` task with its own scratchpad, runtime, and checkpoint namespace. That matches the same machinery that `Send` packets use, so a task call inside an entrypoint behaves like a dynamic task created in the current superstep: the call returns a future, the Pregel runner schedules the work, and sibling tasks can run in parallel. See [Control flow is channels too](./04-control-flow-is-channels-too.md).
 
 ## Persistence and replay
 

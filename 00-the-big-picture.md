@@ -66,7 +66,7 @@ That is why the checkpoint layer sits beneath the engine rather than beside it. 
 
 ## The functional API
 
-`@entrypoint` and `@task` in `libs/langgraph/langgraph/func/__init__.py` use the same runtime without a drawn graph. For the split between graph-shaped and function-shaped entry points, see [One engine, two APIs](/07-one-engine-two-apis.md) and the official [Functional API docs](https://docs.langchain.com/oss/python/langgraph/functional-api). The functional API still compiles into Pregel, still uses channels and checkpoints, and still honors the same durability model. It simply exposes the engine through function-shaped entry points instead of a state graph builder.
+`@entrypoint` and `@task` in `libs/langgraph/langgraph/func/__init__.py` use the same runtime without a drawn graph. For the split between graph-shaped and function-shaped entry points, see [One engine, two APIs](/07-one-engine-two-apis.md) and the official [Functional API docs](https://docs.langchain.com/oss/python/langgraph/functional-api). The functional API compiles into Pregel, uses the same channels and checkpoints, and honors the same durability model. It exposes the engine through function-shaped entry points instead of a state graph builder.
 
 ## Supporting cast
 

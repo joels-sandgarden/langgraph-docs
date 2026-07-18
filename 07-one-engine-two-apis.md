@@ -1,10 +1,10 @@
 # One Engine, Two APIs
 
-LangGraph offers two front ends into one runtime: `StateGraph` and the Functional API built from `@entrypoint` and `@task`. Both lower to `Pregel`, so they share one superstep loop, one channel model, one checkpointer, and one replay contract. Nothing new needs learning at the engine layer; the Functional API mainly hides graph shape that `StateGraph` keeps explicit.
+LangGraph offers two front ends into one runtime: `StateGraph` and the Functional API built from `@entrypoint` and `@task`. Both lower to `Pregel`, so they share the same superstep loop, the same channel model, the same checkpointer, and the same replay rules. Nothing new needs learning at the engine layer; the Functional API mainly hides graph shape that `StateGraph` makes explicit.
 
 ## The mental model
 
-In `langgraph/graph/state.py`, `StateGraph.compile()` builds a `CompiledStateGraph`, and that class subclasses `Pregel`. In `langgraph/func/__init__.py`, `entrypoint.__call__` skips the builder layer and constructs a `Pregel` directly. The important point is not the syntax difference but the lowering step: both paths land on the same engine, and `langgraph/pregel/_loop.py` drives both with the same plan, execute, update cycle, checkpoint creation, and resume handling. The same `checkpointer`, `channel_versions`, and `versions_seen` bookkeeping decides what runs next in both APIs, so nothing at the runtime layer needs to be relearned.
+In `langgraph/graph/state.py`, `StateGraph.compile()` builds a `CompiledStateGraph`, and that class subclasses `Pregel`. In `langgraph/func/__init__.py`, `entrypoint.__call__` skips the builder layer and constructs a `Pregel` directly. The important point is not the syntax difference but the lowering step: both paths land on the same engine, and `langgraph/pregel/_loop.py` drives both with the same plan, execute, update cycle, checkpoint creation, and resume handling. That `checkpointer`, `channel_versions`, and `versions_seen` bookkeeping decides what runs next in both APIs, so nothing at the runtime layer needs relearning.
 
 ## What `@entrypoint` constructs
 

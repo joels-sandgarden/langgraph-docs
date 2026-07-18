@@ -1,14 +1,14 @@
 # Anatomy of a Single Invoke Run
 
-This page traces one synchronous `graph.invoke(input, config)` call from entry to returned output. It shows how a compiled LangGraph graph with a `thread_id` turns one request into a superstep loop: load checkpoint state, plan runnable tasks, execute them, apply writes, and stop with a stable result.
+This page traces one synchronous `graph.invoke(input, config)` call through the engine that powers a compiled LangGraph graph with a `thread_id`. It shows how one request becomes a superstep loop: load checkpoint state, plan runnable tasks, execute them, apply writes, and stop with a stable result.
 
-The official LangGraph docs at [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/) cover the public model. This page fills in the connective path between those concepts and the Python engine, and it sits beside the broader map in [/00-the-big-picture.md](/00-the-big-picture.md) and the API split in [/07-one-engine-two-apis.md](/07-one-engine-two-apis.md).
+The official LangGraph docs at [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/) cover the public model. This page adds the connective path between those concepts and the Python engine, and it sits beside the broader map in [/00-the-big-picture.md](/00-the-big-picture.md) and the API split in [/07-one-engine-two-apis.md](/07-one-engine-two-apis.md).
 
 ## 1. Entry
 
 `Pregel.invoke` does not create a separate execution path. It calls `stream()` and drains the stream until the loop ends, then returns the final output.
 
-That matters because the invoke path still uses the same streaming engine, the same checkpointing behavior, and the same task scheduler as the other graph entry points. The rest of this page follows the synchronous path through `libs/langgraph/langgraph/pregel/main.py`, `libs/langgraph/langgraph/pregel/_loop.py`, `libs/langgraph/langgraph/pregel/_algo.py`, `libs/langgraph/langgraph/pregel/_checkpoint.py`, and `libs/langgraph/langgraph/pregel/_runner.py`.
+The rest of this page follows the synchronous path through `libs/langgraph/langgraph/pregel/main.py`, `libs/langgraph/langgraph/pregel/_loop.py`, `libs/langgraph/langgraph/pregel/_algo.py`, `libs/langgraph/langgraph/pregel/_checkpoint.py`, and `libs/langgraph/langgraph/pregel/_runner.py`.
 
 ## 2. Loop setup
 

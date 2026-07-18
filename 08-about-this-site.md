@@ -4,9 +4,9 @@ This field guide explains the connective internals of the LangGraph Python libra
 
 This page frames the rest of the site. The pages below stay at the concept level and use real file paths and symbol names so each concept stays traceable. The guide keeps its attention on the open source Python library in `libs/langgraph` and `libs/checkpoint*`; it does not repeat API reference material, step by step tutorials, the hosted platform, the SDK packages, or the separate JS and TS port in `langgraphjs`.
 
-That framing matters because the codebase does not divide cleanly along API names. A reader needs one model that explains how state schemas, graph topology, compiled artifacts, checkpoint records, and execution state interact. This guide keeps those pieces in view together so the rest of the pages can stay focused on one idea at a time.
+Engineers adopting, embedding, extending, or debugging LangGraph need one mental model for state schemas, graph topology, compiled artifacts, checkpoint records, and execution state.
 
-This guide keeps those pieces together because state schemas, graph topology, compiled artifacts, checkpoint records, and execution state all shape one another. A graph definition changes the compiled artifact, and that artifact in turn changes how checkpoints and execution state evolve. Splitting those topics hides the contract that the runtime maintains and makes the rest of the map harder to read.
+The official LangGraph docs cover usage, tutorials, and reference material. This site covers the connective layer they do not spell out: how those pieces work together across the runtime.
 
 ## Contents
 

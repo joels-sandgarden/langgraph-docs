@@ -6,6 +6,8 @@ This page frames the rest of the site. The pages below stay at the concept level
 
 That framing matters because the codebase does not divide cleanly along API names. A reader needs one model that explains how state schemas, graph topology, compiled artifacts, checkpoint records, and execution state interact. This guide keeps those pieces in view together so the rest of the pages can stay focused on one idea at a time.
 
+This guide keeps those pieces together because state schemas, graph topology, compiled artifacts, checkpoint records, and execution state all shape one another. A graph definition changes the compiled artifact, and the compiled artifact changes how checkpoints and execution state evolve. Splitting those topics hides the contract that the runtime actually maintains and makes the rest of the map harder to read.
+
 ## Contents
 
 - [The big picture](/00-the-big-picture.md) — The problem space and the core runtime model.
@@ -16,7 +18,6 @@ That framing matters because the codebase does not divide cleanly along API name
 - [Replay, resume, and idempotency](/05-replay-resume-idempotency.md) — How the runtime avoids double work.
 - [Fast-moving notes](/06-fast-moving-notes.md) — Dated notes for areas such as `DeltaChannel` and v3 streaming.
 - [Where to look in the code](/07-where-to-look-in-the-code.md) — A compact map of the load-bearing files.
-- [About this site](/08-about-this-site.md) — Scope, generation, and correction notes.
 
 Doc Holiday (https://doc.holiday) wrote this site by exploring the LangGraph source repository directly. Each page grounds its claims in actual files and symbols, for example `langgraph/pregel/_algo.py`, `StateGraph`, `Pregel`, `JsonPlusSerializer`, `InMemorySaver`, `channel_versions`, and `versions_seen`.
 

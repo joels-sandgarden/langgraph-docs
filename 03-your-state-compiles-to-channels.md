@@ -1,6 +1,6 @@
 # How `StateGraph` State Compiles to Channels
 
-`StateGraph` does not keep state as a single mutable map. It lowers each schema key into a channel object with its own update rule, persistence shape, and trigger behavior. That bridge matters more than the surface syntax on the page, because the channel decides what happens when multiple nodes write, how values survive checkpoints, and when downstream nodes wake up.
+`StateGraph` does not keep state as a single mutable map. It lowers each schema key into a channel object with its own update rule, persistence shape, and trigger behavior. That bridge matters more than the surface syntax on the page, because the channel decides what happens when multiple nodes write, how values survive checkpoints, and when downstream nodes wake up. For the official references on reducer semantics, channel types, and write errors, see [graph-api](https://docs.langchain.com/oss/python/langgraph/graph-api), [pregel](https://docs.langchain.com/oss/python/langgraph/pregel), [INVALID_CONCURRENT_GRAPH_UPDATE](https://docs.langchain.com/oss/python/langgraph/errors/INVALID_CONCURRENT_GRAPH_UPDATE), and [INVALID_GRAPH_NODE_RETURN_VALUE](https://docs.langchain.com/oss/python/langgraph/errors/INVALID_GRAPH_NODE_RETURN_VALUE).
 
 The useful mental model is operational: a node returns a batch of writes, the engine routes each write to a channel, and the channel decides how to absorb that batch. A plain key becomes `LastValue`, a reducer key becomes `BinaryOperatorAggregate`, and an explicit channel instance stays the channel that the graph uses. `ManagedValue` comes from the runtime scratchpad, so the schema can name a runtime-supplied value without storing it in checkpointed state.
 
@@ -9,11 +9,11 @@ class State(TypedDict):
     messages: Annotated[list, add_messages]
 ```
 
-That line does not add special message handling. It asks the compiler for a reducer-backed channel, and `add_messages` behaves like an ordinary two-argument reducer. The runtime then works against the channel object, not against the annotation text.
+That line compiles the `messages` key to `BinaryOperatorAggregate`. `add_messages` is an ordinary two-argument reducer in `libs/langgraph/langgraph/graph/message.py`. The runtime then works against the channel object, not against the annotation text.
 
 ## How compilation resolves a field
 
-`StateGraph` reads the schema with `get_type_hints(..., include_extras=True)` in `libs/langgraph/langgraph/graph/state.py` and walks each field through `_get_channels`. `_get_channel` resolves a field in a fixed order: managed value first, explicit channel instance or channel class in `Annotated` metadata next, then a callable reducer when the last `Annotated` item accepts two positional arguments, and `LastValue` as the fallback. A callable with the wrong arity raises `Invalid reducer signature. Expected (a, b) -> c`. The order matters because the same annotation can mean a runtime channel, a reducer key, or a plain value depending on the metadata.
+`StateGraph` reads the schema with `get_type_hints(..., include_extras=True)` in `libs/langgraph/langgraph/graph/state.py` and walks each field through `_get_channels`. `_get_channel` resolves a field in a fixed order: managed value first, explicit channel instance or channel class in `Annotated` metadata next, then a callable reducer when the last `Annotated` item accepts two positional arguments, and `LastValue` as the fallback. A callable with the wrong arity raises `Invalid reducer signature. Expected (a, b) -> c`. When a node returns something that is not a valid update shape, the runtime points to `errors/INVALID_GRAPH_NODE_RETURN_VALUE`. The order matters because the same annotation can mean a runtime channel, a reducer key, or a plain value depending on the metadata.
 
 Compilation also materializes the input side as `START: EphemeralValue(self.input_schema)`, then uses ephemeral and barrier channels to wire control-flow for branches and joins. The schema line only describes intent; compilation turns that intent into channel objects with concrete runtime behavior.
 

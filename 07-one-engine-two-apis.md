@@ -1,6 +1,6 @@
 # One Engine, Two APIs
 
-LangGraph offers two front ends into one runtime: `StateGraph` and the Functional API built from `@entrypoint` and `@task`. Both lower to `Pregel`, so they share the same superstep loop, the same channel model, the same checkpointer, and the same replay rules. Nothing new needs learning at the engine layer; the Functional API mainly hides graph shape that `StateGraph` makes explicit.
+LangGraph offers two front ends into one runtime: `StateGraph` and the Functional API built from `@entrypoint` and `@task`. Both lower to `Pregel`, so they share one superstep loop, one channel model, one checkpointer, and one replay contract. Nothing new needs learning at the engine layer; the Functional API mainly hides graph shape that `StateGraph` keeps explicit.
 
 ## The mental model
 

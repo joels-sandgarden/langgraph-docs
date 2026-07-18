@@ -16,11 +16,11 @@ LangGraph takes checkpoints only at superstep boundaries because channels stay i
 
 This boundary rule also explains time travel. A checkpoint can represent the end of a superstep, so the system can resume, fork, or inspect history from that point with the same rules it uses for normal recovery. It cannot land at a finer grained midpoint, because no midpoint ever becomes a consistent channel state. The official [time travel](https://docs.langchain.com/oss/python/langgraph/use-time-travel) page documents the user facing behavior; the checkpoint shape makes that behavior possible.
 
-## Two stores solve the crash inside a superstep case
+## Two stores handle crash recovery
 
 LangGraph keeps pending task writes separate from committed checkpoints so a crash never has to guess which work finished. `put_writes` records a task's writes as soon as the task produces them, `_checkpointer_put_after_previous` waits for those write futures before it publishes the next checkpoint, and `after_tick` saves the checkpoint only after `apply_writes` finishes the step.
 
-That split gives the runtime a clean crash story. If the process stops in the middle of a superstep, the next run can load the last committed checkpoint, read the staged task writes, and continue from a state that still matches the step boundary. The staged writes act like write ahead intent, while the checkpoint acts like committed history. The [replay, resume, and idempotency](/06-replay-resume-and-idempotency.md) guide connects that shape to the rerun contract in more detail.
+That split gives the runtime a clean crash story. If the process stops in the middle of a superstep, the next run can load the last committed checkpoint, read the staged task writes, and continue from a state that still matches the step boundary. The staged writes act like write ahead intent, while the checkpoint acts like committed history. The [replay, resume, and idempotency](/06-replay-resume-and-idempotency.md) guide ties that shape to the rerun contract.
 
 `exit_delta_task_id` matters here too. When the runtime needs to stage delta channel writes for later persistence, it gives them an ordered task id so the saver can keep them in chronological order without adding another sequence column.
 
@@ -38,7 +38,7 @@ Ordered ids make history traversal straightforward. `get_state_history` can sort
 
 ## The payload stays compact, not human readable
 
-`JsonPlusSerializer` sounds like JSON, but the wire format uses msgpack through `ormsgpack`. The serializer still understands LangChain objects and the other framework types that checkpointing needs, but it keeps the payload machine friendly rather than text friendly.
+`JsonPlusSerializer` sounds like JSON, but the wire format uses msgpack through `ormsgpack`. The serializer still understands LangChain objects and the other framework types checkpointing needs, but it keeps the payload compact and machine friendly.
 
 That choice matters because checkpoints need to move quickly between memory and storage. The serializer boundary hides the wire format from the rest of the engine, so the checkpoint model can stay focused on state and versions instead of encoding details. The official [checkpointers](https://docs.langchain.com/oss/python/langgraph/checkpointers) docs cover the serialization and fallback story in user terms.
 

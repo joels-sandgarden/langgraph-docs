@@ -14,13 +14,13 @@ Superstep checkpoints form the committed resume boundary. `apply_writes` advance
 
 Pending writes narrow that boundary inside the superstep. `PregelLoop.put_writes()` saves task writes before the next checkpoint, and `_reapply_writes_to_succeeded_nodes()` restores finished siblings from those writes so already completed work does not run again after resume. This layer lets the engine keep the results of nodes that already finished while it re-evaluates the nodes that still need work.
 
-Atomic node bodies sit at the innermost boundary. `run_with_retry` and `arun_with_retry` restart the node body from the top after an interruption, a timeout, or a failure, so any side effect before the boundary can run again on the next attempt. The safest mental model says that a node body owns a single execution attempt, not a permanent execution state.
+Atomic node bodies sit at the innermost boundary. `run_with_retry` and `arun_with_retry` restart the node body from the top after an interruption, a timeout, or a failure, so any side effect before the boundary can run again on the next attempt. The safest mental model treats a node body as one attempt, not a lasting execution state.
 
 ## 3. Interrupt case, concretely.
 
 `interrupt()` raises `GraphInterrupt` the first time a node reaches it and returns the supplied value to the caller through `Interrupt`. A resuming caller sends `Command(resume=...)`, and the scratchpad in `langgraph/pregel/_algo.py` feeds resume values back in call order through the same node body.
 
-`PregelRunner.commit()` records the interrupt write, and `PregelLoop._suppress_interrupt()` commits the checkpoint and suppresses the exception for the outer graph. The loop then resumes from the last committed checkpoint, not from the line after `interrupt()`, so anything before the call can execute again on resume and must stay free of side effects or idempotent.
+`PregelRunner.commit()` records the interrupt write, and `PregelLoop._suppress_interrupt()` commits the checkpoint and suppresses the exception for the outer graph. The loop then resumes from the last committed checkpoint, not from the line after `interrupt()`, so anything before the call can execute again on resume and must stay free of side effects or make those side effects idempotent.
 
 Multiple `interrupt()` calls in one node follow the same order. The first resume value satisfies the first suspended call, the second resume value satisfies the second call, and so on; the contract lives in `langgraph/types.py` alongside `Command`, `Interrupt`, and `PregelTask`. That ordering also covers `PregelExecutableTask`, which gives the runner one task object to resume, retry, or replay.
 
@@ -36,7 +36,7 @@ That contract pushes idempotency to the edge of the system. External writes need
 
 The Functional API uses the same durable execution machinery, but it shifts the replay boundary down to tasks. In `langgraph/func/__init__.py`, `@task` wraps work as `_TaskFunction`, and completed task results persist in the checkpointer so replay can return the recorded result instead of recomputing that task. The runner restores those task writes through the same commit path that Graph API nodes use, so the mechanism stays shared even when the programming model changes.
 
-The entrypoint body still re-executes from the top on replay. That means orchestration code runs again, but finished tasks behave like memoized steps because the runner restores their saved values before it schedules fresh work. `entrypoint.final` only separates the returned value from the saved value; it does not change the replay model. It gives the Functional API a clean split between what the caller sees now and what the next invocation sees later.
+The entrypoint body still re-executes from the top on replay. That means orchestration code runs again, but finished tasks behave like memoized steps because the runner restores their saved values before it schedules fresh work. `entrypoint.final` only separates the returned value from the saved value; it does not change the replay model. It gives the Functional API a clean split between the value returned now and the value stored for the next invocation.
 
 ## 6. Time travel as the same machinery.
 

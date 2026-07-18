@@ -1,8 +1,8 @@
 # About this site
 
-This field guide explains the connective internals of the LangGraph Python library. It focuses on the parts the official docs do not spend much time on: the version bookkeeping that decides when a node runs, what `compile()` lowers a graph into, why checkpoints carry the fields they do, and how replay, resume, and idempotency work together.
+This field guide explains the connective internals of the LangGraph Python library. It focuses on the layer that decides when nodes run, what `compile()` produces, why checkpoints have their shape, and how replay, resume, and idempotency stay consistent across runs.
 
-This page frames the rest of the site. The pages below stay at the concept level and use real file paths and symbol names so the code stays easy to trace. The guide keeps its attention on the open source Python library in `libs/langgraph` and `libs/checkpoint*`; it does not try to cover the hosted platform, the SDK packages, or the separate JS and TS port in `langgraphjs`.
+This page frames the rest of the site. The pages below stay at the concept level and use real file paths and symbol names so each concept stays traceable. The guide keeps its attention on the open source Python library in `libs/langgraph` and `libs/checkpoint*`; it does not repeat API reference material, step by step tutorials, the hosted platform, the SDK packages, or the separate JS and TS port in `langgraphjs`.
 
 ## Contents
 

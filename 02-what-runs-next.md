@@ -20,13 +20,13 @@ The loop follows a simple sequence: run, consume, write, bump, compare again. A 
 
 The tokens in this table are opaque order markers. The scheduler compares them; it does not parse them as timestamps or counters.
 
-| Superstep | Node that runs | `channel_versions` | `versions_seen[A]` | `versions_seen[B]` |
+| Superstep | Node that runs | `channel_versions` | `versions_seen[A][start]` | `versions_seen[B][work]` |
 | --- | --- | --- | --- | --- |
-| 0 | `A` | `start=α`, `work=∅` | `start=α` | `work=∅` |
-| 1 | `B` | `start=α`, `work=β` | `start=α`, `work=β` | `work=β` |
-| 2 | none | `start=α`, `work=β`, `done=γ` | `start=α`, `work=β` | `work=β`, `done=γ` |
+| 0 | `A` | `start=α`, `work=∅`, `done=∅` | `α` | `∅` |
+| 1 | `B` | `start=α`, `work=β`, `done=∅` | `α` | `β` |
+| 2 | none | `start=α`, `work=β`, `done=γ` | `α` | `β` |
 
-In this graph, `A` reacts to `start` and produces `work`, then `B` reacts to `work` and produces `done`. After `B` runs, no trigger channel advances again, so the frontier goes empty and the run stops.
+In this graph, `A` reacts to `start` and produces `work`, then `B` reacts to `work` and produces `done`. Each node only shows the trigger channel it watches. After `B` runs, no trigger channel advances again, so the frontier goes empty and the run stops.
 
 ## Why versions exist instead of a dirty flag
 
@@ -44,13 +44,13 @@ The same two maps drive every pass through the loop: planning compares them, exe
 
 ```mermaid
 flowchart LR
-  CV[channel_versions store] --> Plan[prepare_next_tasks and _triggers]
-  VS[versions_seen store] --> Plan
+  CV[channel versions] --> Plan[prepare next tasks]
+  VS[versions seen] --> Plan
   Plan --> Run[execute due nodes]
   Run --> Writes[writes]
-  Writes --> Apply[apply_writes]
-  Apply --> Bump[channel_versions advances]
-  Apply --> Seen[versions_seen catches up]
+  Writes --> Apply[apply writes]
+  Apply --> Bump[channel versions advance]
+  Apply --> Seen[versions seen catch up]
   Bump --> Plan
   Seen --> Plan
 ```

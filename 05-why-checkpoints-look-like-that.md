@@ -4,23 +4,23 @@ LangGraph checkpoints store channel values plus version bookkeeping, not an even
 
 This page explains the checkpoint format's design choices without repeating the storage tables or saver details covered in the official [checkpointers](https://docs.langchain.com/oss/python/langgraph/checkpointers), [persistence](https://docs.langchain.com/oss/python/langgraph/persistence), [time travel](https://docs.langchain.com/oss/python/langgraph/use-time-travel), and [MISSING_CHECKPOINTER](https://docs.langchain.com/oss/python/langgraph/errors/MISSING_CHECKPOINTER) pages. It sits alongside [anatomy of an invoke](/01-anatomy-of-an-invoke.md), [what runs next](/02-what-runs-next.md), [your state compiles to channels](/03-your-state-compiles-to-channels.md), [control flow is channels too](/04-control-flow-is-channels-too.md), [replay, resume, and idempotency](/06-replay-resume-and-idempotency.md), [one engine, two APIs](/07-one-engine-two-apis.md), and [about this site](/08-about-this-site.md).
 
-## Mental model
+## Why checkpoints store snapshot plus version maps
 
-A checkpoint stores the current channel values and the version bookkeeping that explains how those values arrived there. `Checkpoint` and `CheckpointMetadata` capture the saved state, while `prepare_next_tasks` and `should_interrupt` use `channel_versions` and `versions_seen` to decide which nodes wake up next.
+A checkpoint stores the current channel values plus two version maps: `channel_versions` for channels and `versions_seen` for nodes. `Checkpoint` and `CheckpointMetadata` capture that saved state, while `prepare_next_tasks` and `should_interrupt` compare the maps to decide which nodes wake up next. The scheduler re-derives the execution frontier by pure comparison, so the state itself becomes the resume point and the engine does not carry a separate program counter.
 
 That matters because the runtime can restore in O(1) relative to the size of the recorded history. It does not need to replay every past write to rebuild state, and it does not need a separate log scan to recover the frontier. `channels_from_checkpoint`, `achannels_from_checkpoint`, and `copy_checkpoint` all rely on that direct snapshot model.
 
-## Superstep boundaries keep the state consistent
+## Why checkpoints land only at superstep boundaries
 
 LangGraph takes checkpoints only at superstep boundaries because channels stay immutable during a step. `apply_writes` collects every task result and applies it at the boundary, and `_put_checkpoint` commits the boundary state after the step finishes. That boundary matches the BSP style that the rest of the execution model already uses in [anatomy of an invoke](/01-anatomy-of-an-invoke.md).
 
 This boundary rule also explains time travel. A checkpoint can represent the end of a superstep, so the system can resume, fork, or inspect history from that point with the same rules it uses for normal recovery. It cannot land at a finer grained midpoint, because no midpoint ever becomes a consistent channel state. The official [time travel](https://docs.langchain.com/oss/python/langgraph/use-time-travel) page documents the user facing behavior; the checkpoint shape makes that behavior possible.
 
-## Two stores handle crash recovery
+## Why two stores handle crash recovery
 
 LangGraph keeps pending task writes separate from committed checkpoints so a crash never has to guess which work finished. `put_writes` records a task's writes as soon as the task produces them, `_checkpointer_put_after_previous` waits for those write futures before it publishes the next checkpoint, and `after_tick` saves the checkpoint only after `apply_writes` finishes the step.
 
-That split gives the runtime a clean crash story. If the process stops in the middle of a superstep, the next run can load the last committed checkpoint, read the staged task writes, and continue from a state that still matches the step boundary. The staged writes act like write ahead intent, while the checkpoint acts like committed history. The [replay, resume, and idempotency](/06-replay-resume-and-idempotency.md) guide ties that shape to the rerun contract.
+That split gives the runtime a clean crash story. If three parallel nodes run and one fails, the two nodes that already finished keep their writes as pending writes attached to the in-progress checkpoint. If the process stops in the middle of a superstep, the next run can load the last committed checkpoint, read the staged task writes, and continue from a state that still matches the step boundary. The staged writes act like write ahead intent, while the checkpoint acts like committed history. The [replay, resume, and idempotency](/06-replay-resume-and-idempotency.md) guide ties that shape to the rerun contract.
 
 `exit_delta_task_id` matters here too. When the runtime needs to stage delta channel writes for later persistence, it gives them an ordered task id so the saver can keep them in chronological order without adding another sequence column.
 
@@ -46,7 +46,7 @@ That choice matters because checkpoints need to move quickly between memory and 
 
 `BaseCheckpointSaver` defines the public contract, and `libs/checkpoint-conformance` turns that contract into an executable specification for third party savers. A saver that passes that suite matches the behavior LangGraph expects for checkpoints, writes, history, and copy operations.
 
-The first party savers include Postgres, SQLite, and `InMemorySaver`. `InMemorySaver` fits development and tests, not production. As of mid 2026, `DeltaChannel` remains beta and unstable, so this guide treats it as a brief side note rather than the main story.
+The first party savers include Postgres, SQLite, and `InMemorySaver`. `InMemorySaver` fits development and tests, not production. As of mid-2026, the beta `DeltaChannel` relaxes the rule that `channel_values` holds every channel's snapshot by reconstructing some channels from recorded writes; its format is explicitly unstable and this guide does not cover it.
 
 ## Where to look in the code
 

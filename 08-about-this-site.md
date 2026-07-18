@@ -4,6 +4,8 @@ This field guide explains the connective internals of the LangGraph Python libra
 
 This page frames the rest of the site. The pages below stay at the concept level and use real file paths and symbol names so each concept stays traceable. The guide keeps its attention on the open source Python library in `libs/langgraph` and `libs/checkpoint*`; it does not repeat API reference material, step by step tutorials, the hosted platform, the SDK packages, or the separate JS and TS port in `langgraphjs`.
 
+That framing matters because the codebase does not divide cleanly along API names. A reader needs one model that explains how state schemas, graph topology, compiled artifacts, checkpoint records, and execution state interact. This guide keeps those pieces in view together so the rest of the pages can stay focused on one idea at a time.
+
 ## Contents
 
 - [The big picture](/00-the-big-picture.md) — The problem space and the core runtime model.
@@ -18,8 +20,12 @@ This page frames the rest of the site. The pages below stay at the concept level
 
 Doc Holiday (https://doc.holiday) wrote this site by exploring the LangGraph source repository directly. Each page grounds its claims in actual files and symbols, for example `langgraph/pregel/_algo.py`, `StateGraph`, `Pregel`, `JsonPlusSerializer`, `InMemorySaver`, `channel_versions`, and `versions_seen`.
 
+Several terms recur across the site because they carry the runtime story. `channel_versions` tracks version state by channel name. `versions_seen` tracks, by node name, what each node has already consumed. Those two fields sit at the center of scheduling, replay, and idempotency, so the guide returns to them when it explains why a checkpoint looks the way it does.
+
 [GENERATED_FROM: commit SHORT_SHA, DATE — the operator will replace this placeholder; include it verbatim, do NOT substitute a commit or date yourself]
 
 The guide covers only the open source Python library. A separate JS and TS port lives in `langgraphjs`. The codebase changes quickly, so this site captures a snapshot rather than a fixed contract. The official LangGraph docs remain authoritative. Corrections are welcome at `[CONTACT_OR_REPO_LINK placeholder for the operator]`.
+
+This snapshot should be read against the repository, not instead of it. When the code shifts, the pages here should shift with it. The correction token above exists so the operator can update the text without rewriting the whole guide.
 
 Fast moving areas such as the beta `DeltaChannel` and v3 streaming appear only as dated side notes when they affect the surrounding design. The main thread of the guide stays on the stable core: `StateGraph`, `Pregel`, channels, and checkpointers.

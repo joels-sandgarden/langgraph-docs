@@ -12,14 +12,14 @@ The guide runs from the big picture through invoke flow, scheduling, state compi
 
 ## Contents
 
-- [The big picture](/00-the-big-picture.md) — The problem space and the core runtime model.
-- [State schemas and graph topology](/01-state-schemas-and-graph-topology.md) — How state definitions and edges shape execution.
-- [Compilation](/02-compilation.md) — What `compile()` produces and why the result matters.
-- [Version bookkeeping](/03-version-bookkeeping.md) — How `channel_versions` and `versions_seen` drive scheduling.
-- [Checkpoints](/04-checkpoints.md) — How the stored state is shaped and why the shape matters.
-- [Replay, resume, and idempotency](/05-replay-resume-idempotency.md) — How the runtime avoids double work.
-- [Fast-moving notes](/06-fast-moving-notes.md) — Dated notes for areas such as `DeltaChannel` and v3 streaming.
-- [Where to look in the code](/07-where-to-look-in-the-code.md) — A compact map of the load-bearing files.
+- [The big picture](/00-the-big-picture.md) — the map of the LangGraph monorepo: builder, engine, persistence, and the platform boundary
+- [Anatomy of an invoke](/01-anatomy-of-an-invoke.md) — one graph.invoke() traced end to end through the superstep loop
+- [What runs next](/02-what-runs-next.md) — the version-trigger mechanism: how channel_versions and versions_seen decide which node fires
+- [Your state compiles to channels](/03-your-state-compiles-to-channels.md) — how a state schema becomes channel objects: reducers, the channel zoo, and when each errors
+- [Control flow is channels too](/04-control-flow-is-channels-too.md) — edges, branches, Send, and Command: how topology compiles away into channels and tasks
+- [Why checkpoints look like that](/05-why-checkpoints-look-like-that.md) — the checkpoint format's design rationale: snapshots plus version bookkeeping
+- [Replay, resume, and idempotency](/06-replay-resume-and-idempotency.md) — what durable execution guarantees, what re-runs on resume, and the side-effect contract
+- [One engine, two APIs](/07-one-engine-two-apis.md) — what @entrypoint and @task compile to: the same Pregel engine
 
 Doc Holiday (https://doc.holiday) wrote this site by exploring the LangGraph source repository directly. Each page grounds its claims in actual files and symbols, for example `langgraph/pregel/_algo.py`, `StateGraph`, `Pregel`, `JsonPlusSerializer`, `InMemorySaver`, `channel_versions`, and `versions_seen`.
 

@@ -14,7 +14,7 @@ Superstep checkpoints form the committed resume boundary. `apply_writes` advance
 
 Pending writes narrow that boundary inside the superstep. `PregelLoop.put_writes()` saves task writes before the next checkpoint, and `_reapply_writes_to_succeeded_nodes()` restores finished siblings from those writes so already completed work does not run again after resume. This layer lets the engine keep the results of nodes that already finished while it re-evaluates the nodes that still need work.
 
-Atomic node bodies sit at the innermost boundary. `run_with_retry` and `arun_with_retry` restart the node body from the top after an interruption, a timeout, or a failure, so any side effect before the boundary can run again on the next attempt. The safest mental model treats a node body as one attempt, not a lasting execution state.
+Atomic node bodies sit at the innermost boundary. `run_with_retry` and `arun_with_retry` restart the node body from the top after a retryable failure, and `arun_with_retry` also does so after a timeout, so any side effect before the boundary can run again on the next attempt. Interrupt resume is different: the loop re-schedules the task on resume, and `interrupt()` re-executes from the start of the node. The safest mental model treats a node body as one attempt, not a lasting execution state.
 
 ## 3. Interrupt case, concretely.
 

@@ -44,7 +44,7 @@ This loop follows a strict BSP boundary: current writes stay invisible, channels
 
 ## 4. Termination
 
-The loop stops when `prepare_next_tasks(...)` finds no runnable tasks or when the step budget runs out. In the latter case, `SyncPregelLoop.tick()` raises `GraphRecursionError` with the [`GRAPH_RECURSION_LIMIT`](https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT) error code.
+The loop stops when `prepare_next_tasks(...)` finds no runnable tasks or when the step budget runs out. In the latter case, `SyncPregelLoop.tick()` sets `status` to `"out_of_steps"`, and `Pregel.stream` in `main.py` raises `GraphRecursionError` with the [`GRAPH_RECURSION_LIMIT`](https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT) error code after the `while loop.tick():` loop exits.
 
 An interrupt also ends the loop, but the exit path still commits the checkpoint before `__interrupt__` reaches the caller. That keeps the saved state aligned with the interrupt boundary instead of leaving the run half advanced.
 

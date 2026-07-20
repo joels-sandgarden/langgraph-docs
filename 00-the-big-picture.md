@@ -70,7 +70,7 @@ That is why the checkpoint layer sits beneath the engine rather than beside it. 
 
 ## Supporting cast
 
-`sdk-py` and `sdk-js` act as clients for LangGraph Platform; `cli` automates that platform; `prebuilt` ships convenience building blocks; and `langgraphjs` mirrors the idea in JavaScript. None of those packages defines the Python execution engine in this repository. For the guide map and reading order, see [About this site](/08-about-this-site.md).
+`sdk-py`, `sdk-js`, `cli`, and `prebuilt` live in this monorepo as platform clients or tooling; `langgraphjs` is a separate JavaScript/TypeScript repository that mirrors the framework. None of those in-repo packages defines the Python execution engine in this repository. For the guide map and reading order, see [About this site](/08-about-this-site.md).
 
 ## Honest limits, as of July 2026
 

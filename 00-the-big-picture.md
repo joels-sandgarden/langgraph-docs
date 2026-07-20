@@ -1,6 +1,6 @@
 # The big picture
 
-LangGraph runs durable, stateful agent and workflow executions. Most readers meet it through `StateGraph` in `libs/langgraph/langgraph/graph/state.py`, call `compile()`, and then invoke the compiled graph with a `thread_id` so the run can resume later. The official [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/) cover the user facing model in more detail; this page maps the Python monorepo and shows how the pieces fit together. For the path from invoke to execution, see [Anatomy of an invoke](/01-anatomy-of-an-invoke.md) and [What runs next](/02-what-runs-next.md).
+LangGraph runs durable, stateful agent and workflow executions. Most readers meet it through `StateGraph` in `libs/langgraph/langgraph/graph/state.py`, call `compile()`, and then invoke the compiled graph with a `thread_id` so the run can resume later. The official [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/overview) cover the user facing model in more detail; this page maps the Python monorepo and shows how the pieces fit together. For the path from invoke to execution, see [Anatomy of an invoke](/01-anatomy-of-an-invoke.md) and [What runs next](/02-what-runs-next.md).
 
 ## The three layer model
 

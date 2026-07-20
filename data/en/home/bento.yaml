@@ -1,0 +1,22 @@
+header:
+  title: Mental models, not API dumps.
+  description: Each page transfers the mental model of one part of the LangGraph engine — what it is for, the design decisions behind it, and how it relates to its neighbors.
+
+items:
+  - col: col-5
+    icon: bento/rocket_launch
+    title: See the engine, not just the API
+    description: The guide covers the runtime's spine — how a graph compiles into channels and actors, how version bookkeeping decides which node runs next, and how supersteps become checkpoints, so you can hold the whole machine in your head before opening a file.
+    badges: [ ]
+
+  - col: col-7
+    icon: bento/extension
+    title: Grounded in the source
+    description: Every claim cites real files and symbols from the LangGraph repository, and every guide page ends with a "Where to look in the code" map. Nothing here is folklore — it was read out of the code.
+    badges: [ Pregel, Channels, Checkpoints, Replay ]
+
+  - col: col-7
+    icon: bento/shield
+    title: Complements the official docs
+    description: docs.langchain.com owns quickstarts, how-tos, tutorials, and reference — and covers them well. This guide adds the connective layer those docs skip — the version-trigger scheduler, the compile-time lowering of state and edges into channels, the checkpoint design rationale, and the resume-is-replay contract.
+    badges: [ ]

@@ -26,7 +26,7 @@ The sync driver loop in `main.py` runs the cycle as `while loop.tick(): runner.t
 
 - **EXECUTE:** `PregelRunner.tick(...)` runs one task or many, and it runs multiple tasks concurrently when the step contains more than one. Each node hands its return values through `ChannelWrite`, which converts them into `(channel, value)` tuples and sends them to `put_writes()`; with `sync` or `async` durability, the loop records those writes as pending writes before the next checkpoint. See [/05-why-checkpoints-look-like-that.md](/05-why-checkpoints-look-like-that.md) for the durability rationale.
 
-- **UPDATE:** `loop.after_tick()` calls `apply_writes(...)`, which groups writes by channel, updates channels, bumps versions, advances `versions_seen` for the nodes that ran, and checkpoints the step through `_put_checkpoint(...)`. [/03-your-state-compiles-to-channels.md](/03-your-state-compiles-to-channels.md) covers the reducer and channel semantics that make that update possible.
+- **UPDATE:** `loop.after_tick()` calls `apply_writes(...)`, which groups writes by channel, updates channels, bumps versions, and advances `versions_seen` for the nodes that ran. `after_tick()` then checkpoints the step itself through `_put_checkpoint({"source": "loop"})`. [/03-your-state-compiles-to-channels.md](/03-your-state-compiles-to-channels.md) covers the reducer and channel semantics that make that update possible.
 
 ```mermaid
 flowchart TD
@@ -44,7 +44,7 @@ This loop follows a strict BSP boundary: current writes stay invisible, channels
 
 ## 4. Termination
 
-The loop stops when `prepare_next_tasks(...)` finds no runnable tasks or when the step budget runs out. In the latter case, `SyncPregelLoop.tick()` raises `GraphRecursionError` with the [`GRAPH_RECURSION_LIMIT`](https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT) error code.
+The loop stops when `prepare_next_tasks(...)` finds no runnable tasks or when the step budget runs out. In the latter case, `SyncPregelLoop.tick()` sets `status` to `"out_of_steps"`, and `Pregel.stream` in `main.py` raises `GraphRecursionError` with the [`GRAPH_RECURSION_LIMIT`](https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT) error code after the `while loop.tick():` loop exits.
 
 An interrupt also ends the loop, but the exit path still commits the checkpoint before `__interrupt__` reaches the caller. That keeps the saved state aligned with the interrupt boundary instead of leaving the run half advanced.
 

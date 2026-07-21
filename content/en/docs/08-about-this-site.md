@@ -16,23 +16,23 @@ The guide runs from the big picture through invoke flow, scheduling, state compi
 
 ## Contents
 
-- [The big picture](./00-the-big-picture.md) — The problem space and the core runtime model.
-- [State schemas and graph topology](./01-state-schemas-and-graph-topology.md) — How state definitions and edges shape execution.
-- [Compilation](./02-compilation.md) — What `compile()` produces and why the result matters.
-- [Version bookkeeping](./03-version-bookkeeping.md) — How `channel_versions` and `versions_seen` drive scheduling.
-- [Checkpoints](./04-checkpoints.md) — How the stored state is shaped and why the shape matters.
-- [Replay, resume, and idempotency](./05-replay-resume-idempotency.md) — How the runtime avoids double work.
-- [Fast-moving notes](./06-fast-moving-notes.md) — Dated notes for areas such as `DeltaChannel` and v3 streaming.
-- [Where to look in the code](./07-where-to-look-in-the-code.md) — A compact map of the load-bearing files.
+- [The big picture](./00-the-big-picture.md) — the map of the LangGraph monorepo: builder, engine, persistence, and the platform boundary
+- [Anatomy of an invoke](./01-anatomy-of-an-invoke.md) — one graph.invoke() traced end to end through the superstep loop
+- [What runs next](./02-what-runs-next.md) — the version-trigger mechanism: how channel_versions and versions_seen decide which node fires
+- [Your state compiles to channels](./03-your-state-compiles-to-channels.md) — how a state schema becomes channel objects: reducers, the channel zoo, and when each errors
+- [Control flow is channels too](./04-control-flow-is-channels-too.md) — edges, branches, Send, and Command: how topology compiles away into channels and tasks
+- [Why checkpoints look like that](./05-why-checkpoints-look-like-that.md) — the checkpoint format's design rationale: snapshots plus version bookkeeping
+- [Replay, resume, and idempotency](./06-replay-resume-and-idempotency.md) — what durable execution guarantees, what re-runs on resume, and the side-effect contract
+- [One engine, two APIs](./07-one-engine-two-apis.md) — what @entrypoint and @task compile to: the same Pregel engine
 
 Doc Holiday (https://doc.holiday) wrote this site by exploring the LangGraph source repository directly. Each page grounds its claims in actual files and symbols, for example `langgraph/pregel/_algo.py`, `StateGraph`, `Pregel`, `JsonPlusSerializer`, `InMemorySaver`, `channel_versions`, and `versions_seen`.
 
 Several terms recur across the site because they carry the runtime story. `channel_versions` tracks version state by channel name. `versions_seen` tracks, by node name, what each node has already consumed. Those two fields sit at the center of scheduling, replay, and idempotency, so the guide returns to them when it explains why a checkpoint looks the way it does.
 
-[GENERATED_FROM: commit SHORT_SHA, DATE — the operator will replace this placeholder; include it verbatim, do NOT substitute a commit or date yourself]
+Every page was written against, and fact-checked with, a single snapshot of the code: commit 49ae27c2a (2026-07-15) of https://github.com/langchain-ai/langgraph.
 
-The guide covers only the open source Python library. A separate JS and TS port lives in `langgraphjs`. The codebase changes quickly, so this site captures a snapshot rather than a fixed contract. The official LangGraph docs remain authoritative. Corrections are welcome at `[CONTACT_OR_REPO_LINK placeholder for the operator]`.
+The guide covers only the open source Python library. A separate JS and TS port lives in `langgraphjs`. The codebase changes quickly, so this site captures a snapshot rather than a fixed contract. The official LangGraph docs remain authoritative. Corrections are welcome via issues and pull requests at https://github.com/sandgardenhq/langgraph-docs.
 
-This snapshot should be read against the repository, not instead of it. When the code shifts, the pages here should shift with it. The correction token above exists so the operator can update the text without rewriting the whole guide.
+This snapshot should be read against the repository, not instead of it. When the code shifts, the pages here should shift with it.
 
 Fast moving areas such as the beta `DeltaChannel` and v3 streaming appear only as dated side notes when they affect the surrounding design. The main thread of the guide stays on the stable core: `StateGraph`, `Pregel`, channels, and checkpointers.

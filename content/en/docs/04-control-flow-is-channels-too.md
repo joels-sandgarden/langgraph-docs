@@ -27,15 +27,18 @@ flowchart LR
   end
 
   subgraph Runtime
-    ST["START chan"] --> NA["A: PregelNode"]
-    NA --> BA["branch:to:A"]
-    BA --> BT["B trig"]
-    BA --> CT["C trig"]
-    BT --> NB["B: PregelNode"]
-    CT --> NC["C: PregelNode"]
-    NB --> JV["join:A+B+C:D"]
+    ST["START chan"] --> BA0["branch:to:A"]
+    BA0 --> NA["A"]
+    NA --> R{"route"}
+    R --> BTB["branch:to:B"]
+    R --> BTC["branch:to:C"]
+    BTB --> NB["B"]
+    BTC --> NC["C"]
+    NB --> JV["join:B+C:join"]
     NC --> JV
-    JV --> DT["D trig"]
+    JV --> JN["join"]
+    JN --> BTD["branch:to:D"]
+    BTD --> ND["D"]
     TASKS["TASKS"] --> PN["prepare_next_tasks"]
     PN --> PT["push task"]
   end

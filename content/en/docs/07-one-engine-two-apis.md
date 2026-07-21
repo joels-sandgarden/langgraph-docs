@@ -41,4 +41,4 @@ Choose between the APIs for ergonomics and observability, not capability. `State
 - `libs/langgraph/langgraph/pregel/_algo.py` — dynamic functional `PUSH` task creation, scratchpad setup, and checkpoint aware runtime plumbing.
 - `libs/langgraph/langgraph/pregel/_loop.py` — the shared plan, execute, update loop, replay, and checkpoint handling.
 - `libs/langgraph/langgraph/graph/state.py` — `StateGraph.compile()` lowering to `Pregel`.
-- `libs/langgraph/langgraph/_internal/_constants.py` — reserved keys such as `START`, `END`, `PREVIOUS`, `RETURN`, `TASKS`, and `PUSH`.
+- `libs/langgraph/langgraph/constants.py` — `START` and `END`; `libs/langgraph/langgraph/_internal/_constants.py` — `PREVIOUS`, `RETURN`, `TASKS`, and `PUSH`.

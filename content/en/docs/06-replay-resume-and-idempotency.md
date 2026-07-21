@@ -18,7 +18,7 @@ Superstep checkpoints form the committed resume boundary. `apply_writes` advance
 
 Pending writes narrow that boundary inside the superstep. `PregelLoop.put_writes()` saves task writes before the next checkpoint, and `_reapply_writes_to_succeeded_nodes()` restores finished siblings from those writes so already completed work does not run again after resume. This layer lets the engine keep the results of nodes that already finished while it re-evaluates the nodes that still need work.
 
-Atomic node bodies sit at the innermost boundary. `run_with_retry` and `arun_with_retry` restart the node body from the top after an interruption, a timeout, or a failure, so any side effect before the boundary can run again on the next attempt. The safest mental model treats a node body as one attempt, not a lasting execution state.
+Atomic node bodies sit at the innermost boundary. `run_with_retry` and `arun_with_retry` restart the node body from the top after a retryable failure, and `arun_with_retry` also does so after a timeout, so any side effect before the boundary can run again on the next attempt. Interrupt resume is different: the loop re-schedules the task on resume, and `interrupt()` re-executes from the start of the node. The safest mental model treats a node body as one attempt, not a lasting execution state.
 
 ## 3. Interrupt case, concretely.
 
@@ -44,7 +44,7 @@ The entrypoint body still re-executes from the top on replay. That means orchest
 
 ## 6. Time travel as the same machinery.
 
-Time travel and fork use the same replay path with a different replay point. A `checkpoint_id` chooses the boundary, then `channel_versions` and `versions_seen` decide what the engine replays and what it treats as fresh work. `should_interrupt()` uses that version comparison to detect whether a step needs to run again, and `ReplayState` tells subgraphs which checkpoint to load on their first replay visit. For sparse delta channels, `channels_from_checkpoint()` and `achannels_from_checkpoint()` call `_needs_replay()` so the engine can rebuild channel state from history instead of relying on a stored value.
+Time travel and fork use the same replay path with a different replay point. A `checkpoint_id` chooses the boundary, then `channel_versions` and `versions_seen` decide what the engine replays and what it treats as fresh work. Replay-vs-fresh scheduling comes from the same trigger comparison used in normal planning (`_triggers()` inside `prepare_next_tasks`) together with `PregelLoop._first()` and `is_time_traveling`; `should_interrupt()` only compares `channel_versions` against the `versions_seen` entry for the `INTERRUPT` sentinel when the engine pauses at an `interrupt_before` or `interrupt_after` boundary. For sparse delta channels, `channels_from_checkpoint()` and `achannels_from_checkpoint()` call `_needs_replay()` so the engine can rebuild channel state from history instead of relying on a stored value.
 
 A time travel run restores everything before the chosen checkpoint and re-executes everything after it. A fork does the same thing, but it writes a new branch point into history so the replayed run can continue without overwriting the original line of execution. `exit_delta_task_id()` supports the same story for exit mode by preserving chronological order when the saver stores delta writes.
 

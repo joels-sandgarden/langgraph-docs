@@ -4,7 +4,7 @@ url: "docs/the-big-picture"
 description: "The map of the LangGraph monorepo: builder, engine, persistence, and the platform boundary."
 ---
 
-LangGraph runs durable, stateful agent and workflow executions. Most readers meet it through `StateGraph` in `libs/langgraph/langgraph/graph/state.py`, call `compile()`, and then invoke the compiled graph with a `thread_id` so the run can resume later. The official [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/) cover the user facing model in more detail; this page maps the Python monorepo and shows how the pieces fit together. For the path from invoke to execution, see [Anatomy of an invoke](./01-anatomy-of-an-invoke.md) and [What runs next](./02-what-runs-next.md).
+LangGraph runs durable, stateful agent and workflow executions. Most readers meet it through `StateGraph` in `libs/langgraph/langgraph/graph/state.py`, call `compile()`, and then invoke the compiled graph with a `thread_id` so the run can resume later. The official [LangGraph docs](https://docs.langchain.com/oss/python/langgraph/overview) cover the user facing model in more detail; this page maps the Python monorepo and shows how the pieces fit together. For the path from invoke to execution, see [Anatomy of an invoke](./01-anatomy-of-an-invoke.md) and [What runs next](./02-what-runs-next.md).
 
 ## The three layer model
 
@@ -74,7 +74,7 @@ That is why the checkpoint layer sits beneath the engine rather than beside it. 
 
 ## Supporting cast
 
-`sdk-py` and `sdk-js` act as clients for LangGraph Platform; `cli` automates that platform; `prebuilt` ships convenience building blocks; and `langgraphjs` mirrors the idea in JavaScript. None of those packages defines the Python execution engine in this repository. For the guide map and reading order, see [About this site](./08-about-this-site.md).
+`sdk-py`, `sdk-js`, `cli`, and `prebuilt` live in this monorepo as platform clients or tooling; `langgraphjs` is a separate JavaScript/TypeScript repository that mirrors the framework. None of those in-repo packages defines the Python execution engine in this repository. For the guide map and reading order, see [About this site](./08-about-this-site.md).
 
 ## Honest limits, as of July 2026
 

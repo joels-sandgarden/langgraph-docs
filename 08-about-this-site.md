@@ -25,10 +25,10 @@ Doc Holiday (https://doc.holiday) wrote this site by exploring the LangGraph sou
 
 Several terms recur across the site because they carry the runtime story. `channel_versions` tracks version state by channel name. `versions_seen` tracks, by node name, what each node has already consumed. Those two fields sit at the center of scheduling, replay, and idempotency, so the guide returns to them when it explains why a checkpoint looks the way it does.
 
-[GENERATED_FROM: commit SHORT_SHA, DATE — the operator will replace this placeholder; include it verbatim, do NOT substitute a commit or date yourself]
+Every page was written against, and fact-checked with, a single snapshot of the code: commit 49ae27c2a (2026-07-15) of https://github.com/langchain-ai/langgraph.
 
-The guide covers only the open source Python library. A separate JS and TS port lives in `langgraphjs`. The codebase changes quickly, so this site captures a snapshot rather than a fixed contract. The official LangGraph docs remain authoritative. Corrections are welcome at `[CONTACT_OR_REPO_LINK placeholder for the operator]`.
+The guide covers only the open source Python library. A separate JS and TS port lives in `langgraphjs`. The codebase changes quickly, so this site captures a snapshot rather than a fixed contract. The official LangGraph docs remain authoritative. Corrections are welcome via issues and pull requests at https://github.com/sandgardenhq/langgraph-docs.
 
-This snapshot should be read against the repository, not instead of it. When the code shifts, the pages here should shift with it. The correction token above exists so the operator can update the text without rewriting the whole guide.
+This snapshot should be read against the repository, not instead of it. When the code shifts, the pages here should shift with it.
 
 Fast moving areas such as the beta `DeltaChannel` and v3 streaming appear only as dated side notes when they affect the surrounding design. The main thread of the guide stays on the stable core: `StateGraph`, `Pregel`, channels, and checkpointers.
